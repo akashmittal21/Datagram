@@ -9,9 +9,7 @@
     <link rel="stylesheet" href="newDatagram.css" />
     <style></style>
     <link rel="stylesheet" href="bootstrap_4.0.0_css_bootstrap.min.css" />
-    <script src="jquery-3.2.1.slim.min.js"></script>
-    <script src="ajax_libs_popper.js_1.12.9_umd_popper.min.js"></script>
-    <script src="bootstrap_4.0.0_js_bootstrap.min.js"></script>
+    <!-- <link rel="stylesheet" href="bootstrap.min.css" /> -->
     <script src="bootstrap.min.js"></script>
     <script src="popper.min.js"></script>
     <script src="bootstrap.js"></script>
@@ -32,11 +30,13 @@
         Plugin <span id="aitp_plugin_version"></span><br />
         Server <span id="aitp_server_version"></span>
       </div>
-      <hr id="line" />
+      <!-- <hr id="line" /> -->
     </div>
     <div id="graphDiv" class="mermaid"></div>
     <div style="text-align: center">
-      <button id="createNodeBtn">Create New Datagram</button>
+      <button id="createNodeBtn" data-bs-toggle="popover">
+        Create New Datagram
+      </button>
       <button id="create-json-btn" style="display: none">
         Generate JSON File
       </button>

@@ -1,127 +1,191 @@
+function updateDatagram(mermaidStr) {
+	document.getElementById("graphDiv").innerHTML = mermaidStr;
+	document.querySelector('#graphDiv').removeAttribute('data-processed');
+	mermaid.init(undefined, document.querySelector(".mermaid"));
+};
+
+function runMermaid() {
+	mermaid.initialize({
+		startOnLoad: true,
+		flowchart: {
+			useMaxWidth: true,
+		},
+		zoomScale: Math.min(1, window.innerWidth / 1000),
+	});
+
+	mermaid.init(
+		undefined,
+		document.querySelector(".mermaid"),
+		window.onload = function() {
+			newDatagram()
+		}
+	);
+};
+
+async function postData(url = "", data = {}) {
+	
+	const response = await fetch(url, {
+		method: "POST", 
+		mode: "cors", 
+		cache: "no-cache", 
+		credentials: "same-origin", 
+		headers: {
+			"Content-Type": "application/json",
+			
+		},
+		redirect: "follow", 
+		referrerPolicy: "no-referrer", 
+		body: JSON.stringify(data),
+	});
+	
+	return response.json(); 
+};
+	
+
+function getCurrentTimestamp() {
+	const now = new Date();
+	const year = now.getUTCFullYear();
+	const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+	const day = String(now.getUTCDate()).padStart(2, "0");
+	const hours = String(now.getUTCHours()).padStart(2, "0");
+	const minutes = String(now.getUTCMinutes()).padStart(2, "0");
+	const seconds = String(now.getUTCSeconds()).padStart(2, "0");
+	
+	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+function generatePopover() {
+	let tableData = [];
+
+	popoverHtml = `
+					<div class="popover-body-node-click">
+				<ul class="nav nav-tabs" role="tablist">
+					<li class="nav-item">
+						<a class="nav-link active" data-toggle="tab" href="#request-tab" role="tab">Request</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link disabled" data-toggle="tab" href="#response-tab" role="tab">Response</a>
+					</li>
+				</ul>
+				<div class="tab-content">
+					<div class="tab-pane fade show active" id="request-tab" role="tabpanel">
+						<div class="form-group-row">
+							<div class="form-group form-inline">
+							<label for="labelInput" class="mr-2">Label Name:</label>
+							<input type="text" class="form-control" id="labelInput">
+							</div>
+							<div class="form-group form-inline">
+							<label for="blockElement" class="mr-2">Block Element:</label>
+							<select class="form-control" id="blockElement">
+								<option value="" disabled selected>Please select a block</option>
+								<option value="header">Header</option>
+								<option value="body">Body</option>
+								<option value="footer">Footer</option>
+							</select>
+							</div>
+							<div class="form-group form-inline">
+							<label for="categorySelect" class="mr-2">Category:</label>
+							<select class="form-control" id="categorySelect">
+								<option value="" disabled selected>Please select a category</option>
+								<option value="openurl">OpenURL</option>
+								<option value="displayactivepage">DisplayActivePage</option>
+								<option value="settext">SetText</option>
+								<option value="clickbutton">ClickButton</option>
+								<option value="selectdropdown">SelectDropdown</option>
+								<option value="crossverify">Crossverify</option>
+								<option value="nottestedactionales">NotTestedActionables</option>
+								<option value="executeapi">ExecuteAPI</option>
+								<option value="other">Other</option>
+							</select>
+							</div>
+						</div>
+						<table class="table">
+							<thead>
+							<tr>
+								<th scope="col">Attributes</th>
+								<th scope="col">Values</th>
+							</tr>
+							</thead>
+							<tbody>
+							${tableData.map(row => `
+							<tr>
+								<td>${row[0]}</td>
+								<td><input type="text" class="form-control" value="${row[1]}"></td>
+							</tr>
+							`).join("")}
+							</tbody>
+						</table>
+					</div>
+					<div class="tab-pane fade" id="response-tab" role="tabpanel">
+						<div class="form-group-row">
+							<div class="form-group form-inline">
+							<label for="labelInput" class="mr-2">Label Name:</label>
+							<input type="text" class="form-control" id="labelInput">
+							</div>
+							<div class="form-group form-inline">
+							<label for="blockElement" class="mr-2">Block Element:</label>
+							<select class="form-control" id="blockElement">
+								<option value="" disabled selected>Please select a block</option>
+								<option value="header">Header</option>
+								<option value="body">Body</option>
+								<option value="footer">Footer</option>
+							</select>
+							</div>
+							<div class="form-group form-inline">
+							<label for="categorySelect" class="mr-2">Category:</label>
+							<select class="form-control" id="categorySelect">
+								<option value="" disabled selected>Please select a category</option>
+								<option value="openurl">OpenURL</option>
+								<option value="image">image</option>
+								<option value="settext">SetText</option>
+								<option value="clickbutton">ClickButton</option>
+								<option value="selectdropdown">SelectDropdown</option>
+								<option value="crossverify">Crossverify</option>
+								<option value="nottestedactionales">NotTestedActionables</option>
+								<option value="executeapi">ExecuteAPI</option>
+								<option value="other">Other</option>
+							</select>
+							</div>
+						</div>
+						<table class="table">
+							<thead>
+							<tr>
+								<th scope="col">Attributes</th>
+								<th scope="col">Values</th>
+							</tr>
+							</thead>
+							<tbody>
+							${tableData.map(row => `
+							<tr>
+								<td>${row[0]}</td>
+								<td><input type="text" class="form-control" value="${row[1]}"></td>
+							</tr>
+							`).join("")}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="button-container">
+					<button class="btn btn-sm btn-primary create-node-btn">Create Node</button>
+					<button class="btn btn-sm btn-danger cancel-node-btn">Cancel</button>
+				</div>
+				</div>
+				`;
+
+	return popoverHtml
+}; 
+
 function newDatagram() {
 	let jsonData = [];
 	let mermaidStr = `graph TD;`;
 	document.getElementById("graphDiv").innerHTML = mermaidStr;
 
-	let tableData = [];
 	const createNodeBtn = document.getElementById('createNodeBtn');
 	const popoverContent = document.createElement("div");
 	popoverContent.classList.add("popover-body-node-add-click");
+	let tableData = [];
 
-	popoverContent.innerHTML = `
-		<div class="popover-body-node-click">
-			<ul class="nav nav-tabs" role="tablist">
-			<li class="nav-item">
-				<a class="nav-link active" data-toggle="tab" href="#request-tab" role="tab">Request</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link disabled" data-toggle="tab" href="#response-tab" role="tab">Response</a>
-			</li>
-			</ul>
-			<div class="tab-content">
-			<div class="tab-pane fade show active" id="request-tab" role="tabpanel">
-			<div class="form-group-row">
-			<div class="form-group form-inline">
-				<label for="labelInput" class="mr-2">Label Name:</label>
-				<input type="text" class="form-control" id="labelInput">
-			</div>
-			<div class="form-group form-inline">
-				<label for="blockElement" class="mr-2">Block Element:</label>
-				<select class="form-control" id="blockElement">
-				<option value="" disabled selected>Please select a block</option>
-				<option value="header">Header</option>
-				<option value="body">Body</option>
-				<option value="footer">Footer</option>
-				</select>  
-			</div>
-			<div class="form-group form-inline">
-				<label for="categorySelect" class="mr-2">Category:</label>
-				<select class="form-control" id="categorySelect">
-				<option value="" disabled selected>Please select a category</option>
-				<option value="openurl">OpenURL</option>
-				<option value="displayactivepage">DisplayActivePage</option>
-				<option value="settext">SetText</option>
-				<option value="clickbutton">ClickButton</option>
-				<option value="selectdropdown">SelectDropdown</option>
-				<option value="crossverify">Crossverify</option>
-				<option value="nottestedactionales">NotTestedActionables</option>
-				<option value="executeapi">ExecuteAPI</option>
-				<option value="other">Other</option>
-				</select>
-			</div>
-			</div>
-				<table class="table">
-				<thead>
-					<tr>
-					<th scope="col">Attributes</th>
-					<th scope="col">Values</th>
-					</tr>
-				</thead>
-				<tbody>
-					${tableData.map(row => `
-					<tr>
-						<td>${row[0]}</td>
-						<td><input type="text" class="form-control" value="${row[1]}"></td>
-					</tr>
-					`).join("")}
-				</tbody>
-				</table>
-			</div>
-			<div class="tab-pane fade" id="response-tab" role="tabpanel">
-			<div class="form-group-row">
-			<div class="form-group form-inline">
-				<label for="labelInput" class="mr-2">Label Name:</label>
-				<input type="text" class="form-control" id="labelInput">
-			</div>
-			<div class="form-group form-inline">
-				<label for="blockElement" class="mr-2">Block Element:</label>
-				<select class="form-control" id="blockElement">
-				<option value="" disabled selected>Please select a block</option>
-				<option value="header">Header</option>
-				<option value="body">Body</option>
-				<option value="footer">Footer</option>
-				</select>  
-			</div>
-			<div class="form-group form-inline">
-				<label for="categorySelect" class="mr-2">Category:</label>
-				<select class="form-control" id="categorySelect">
-				<option value="" disabled selected>Please select a category</option>
-				<option value="openurl">OpenURL</option>
-				<option value="image">image</option>
-				<option value="settext">SetText</option>
-				<option value="clickbutton">ClickButton</option>
-				<option value="selectdropdown">SelectDropdown</option>
-				<option value="crossverify">Crossverify</option>
-				<option value="nottestedactionales">NotTestedActionables</option>
-				<option value="executeapi">ExecuteAPI</option>
-				<option value="other">Other</option>
-				</select>
-			</div>
-			</div>
-				<table class="table">
-				<thead>
-					<tr>
-					<th scope="col">Attributes</th>
-					<th scope="col">Values</th>
-					</tr>
-				</thead>
-				<tbody>
-					${tableData.map(row => `
-					<tr>
-						<td>${row[0]}</td>
-						<td><input type="text" class="form-control" value="${row[1]}"></td>
-					</tr>
-					`).join("")}
-				</tbody>
-				</table>
-			</div>
-			</div>
-			<div class="button-container">
-			<button class="btn btn-sm btn-primary create-node-btn">Create Node</button>
-			<button class="btn btn-sm btn-danger cancel-node-btn">Cancel</button>
-			</div>
-		</div>
-		`;
+	popoverContent.innerHTML = generatePopover();
 
 	const createNode = popoverContent.querySelector(".create-node-btn");
 	const createJsonBtn = document.querySelector("#create-json-btn");
@@ -132,12 +196,6 @@ function newDatagram() {
 	const responseTab =  popoverContent.querySelector("#response-tab");
 	const responseNavLink = popoverContent.querySelector('a[data-toggle="tab"][href="#response-tab"]');
 	const masterBlock = popoverContent.querySelector("#blockElement")
-	
-	function updateDatagram(mermaidStr) {
-		document.getElementById("graphDiv").innerHTML = mermaidStr;
-		document.querySelector('#graphDiv').removeAttribute('data-processed');
-		mermaid.init(undefined, document.querySelector(".mermaid"));
-	}
 
 	let pageCounter = 1;
 	let elementCounter = 1;
@@ -251,7 +309,7 @@ function newDatagram() {
 				project: {
 				sprintVersion: "s1",
 				sprintName: "s1.1",
-				projectName: "dgsms_test",
+				projectName: "",
 				projectVersion: "1.1"
 				},
 				requirement: "NA",
@@ -286,26 +344,35 @@ function newDatagram() {
 		popoverContent.style.display = 'none';
 	});
 
-	$(createNodeBtn).popover({
-		content: popoverContent,
-		placement: 'right',
-		html: true
-	});
+	// $(createNodeBtn).popover({
+	// 	content: popoverContent,
+	// 	placement: 'right',
+	// 	html: true
+	// });
 
+	const list = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+	list.map((el) => {
+		let options = {
+			content: popoverContent,
+			placement: 'right',
+			html: true,
+			
+		}
+		console.log("bootstrap is being called")
+		new bootstrap.Popover(el, options);
+	});
 
 	// Show the popover when the button is clicked
-	createNodeBtn.addEventListener('click', function() {
-		// promptForProjectDetails();
-		$(this).popover('show');
-	});
+	// createNodeBtn.addEventListener('click', function() {
+	// 	// promptForProjectDetails();
+	// 	$(this).popover('show');
+	// });
 }
 
 function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter, elementCounter) {
 	// console.log(mermaidStr)
 	const edgePaths = document.querySelector(".edgePaths");
 	const paths = edgePaths.querySelectorAll("path");
-	const nodes = document.querySelector(".nodes");
-	const nodeElements = nodes.querySelectorAll(".node");
 
 	paths.forEach((path) => {
 		path.addEventListener("contextmenu", (event) => {
@@ -386,6 +453,8 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 		});
 	});
 
+	const nodes = document.querySelector(".nodes");
+	const nodeElements = nodes.querySelectorAll(".node");
 
 	nodeElements.forEach((nodeElement) => {
 		nodeElement.addEventListener("contextmenu", (event) => {
@@ -468,120 +537,7 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 				// Create new popover content with input, dropdown and table
 				const popoverContent = document.createElement("div");
 				popoverContent.classList.add("popover-body-node-add-click");
-				popoverContent.innerHTML = `
-				<div class="popover-body-node-click">
-				<ul class="nav nav-tabs" role="tablist">
-				<li class="nav-item">
-					<a class="nav-link active" data-toggle="tab" href="#request-tab" role="tab">Request</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link disabled" data-toggle="tab" href="#response-tab" role="tab">Response</a>
-				</li>
-				</ul>
-				<div class="tab-content">
-				<div class="tab-pane fade show active" id="request-tab" role="tabpanel">
-				<div class="form-group-row">
-				<div class="form-group form-inline">
-					<label for="labelInput" class="mr-2">Label Name:</label>
-					<input type="text" class="form-control" id="labelInput">
-				</div>
-				<div class="form-group form-inline">
-					<label for="blockElement" class="mr-2">Block Element:</label>
-					<select class="form-control" id="blockElement">
-					<option value="" disabled selected>Please select a block</option>
-					<option value="header">Header</option>
-					<option value="body">Body</option>
-					<option value="footer">Footer</option>
-					</select>  
-				</div>
-				<div class="form-group form-inline">
-					<label for="categorySelect" class="mr-2">Category:</label>
-					<select class="form-control" id="categorySelect">
-					<option value="" disabled selected>Please select a category</option>
-					<option value="openurl">OpenURL</option>
-					<option value="displayactivepage">DisplayActivePage</option>
-					<option value="settext">SetText</option>
-					<option value="clickbutton">ClickButton</option>
-					<option value="selectdropdown">SelectDropdown</option>
-					<option value="crossverify">Crossverify</option>
-					<option value="nottestedactionales">NotTestedActionables</option>
-					<option value="executeapi">ExecuteAPI</option>
-					<option value="other">Other</option>
-					</select>
-				</div>
-				</div>
-					<table class="table">
-					<thead>
-						<tr>
-						<th scope="col">Attributes</th>
-						<th scope="col">Values</th>
-						</tr>
-					</thead>
-					<tbody>
-						${tableData.map(row => `
-						<tr>
-							<td>${row[0]}</td>
-							<td><input type="text" class="form-control" value="${row[1]}"></td>
-						</tr>
-						`).join("")}
-					</tbody>
-					</table>
-				</div>
-				<div class="tab-pane fade" id="response-tab" role="tabpanel">
-				<div class="form-group-row">
-				<div class="form-group form-inline">
-					<label for="labelInput" class="mr-2">Label Name:</label>
-					<input type="text" class="form-control" id="labelInput">
-				</div>
-				<div class="form-group form-inline">
-					<label for="blockElement" class="mr-2">Block Element:</label>
-					<select class="form-control" id="blockElement">
-					<option value="" disabled selected>Please select a block</option>
-					<option value="header">Header</option>
-					<option value="body">Body</option>
-					<option value="footer">Footer</option>
-					</select>  
-				</div>
-				<div class="form-group form-inline">
-					<label for="categorySelect" class="mr-2">Category:</label>
-					<select class="form-control" id="categorySelect">
-					<option value="" disabled selected>Please select a category</option>
-					<option value="openurl">OpenURL</option>
-					<option value="image">image</option>
-					<option value="settext">SetText</option>
-					<option value="clickbutton">ClickButton</option>
-					<option value="selectdropdown">SelectDropdown</option>
-					<option value="crossverify">Crossverify</option>
-					<option value="nottestedactionales">NotTestedActionables</option>
-					<option value="executeapi">ExecuteAPI</option>
-					<option value="other">Other</option>
-					</select>
-				</div>
-				</div>
-					<table class="table">
-					<thead>
-						<tr>
-						<th scope="col">Attributes</th>
-						<th scope="col">Values</th>
-						</tr>
-					</thead>
-					<tbody>
-						${tableData.map(row => `
-						<tr>
-							<td>${row[0]}</td>
-							<td><input type="text" class="form-control" value="${row[1]}"></td>
-						</tr>
-						`).join("")}
-					</tbody>
-					</table>
-				</div>
-				</div>
-				<div class="button-container">
-				<button class="btn btn-sm btn-primary create-node-btn">Create Node</button>
-				<button class="btn btn-sm btn-danger cancel-node-btn">Cancel</button>
-				</div>
-			</div>
-			`;
+				popoverContent.innerHTML = generatePopover();
 				const labelInput = popoverContent.querySelector("#labelInput");
 				const responseNavLink = popoverContent.querySelector('a[data-toggle="tab"][href="#response-tab"]');
 
@@ -900,57 +856,6 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 			});
 		});
 	});
-}
-
-
-
-
-function runMermaid() {
-	mermaid.initialize({
-		startOnLoad: true,
-		flowchart: {
-			useMaxWidth: true,
-		},
-		zoomScale: Math.min(1, window.innerWidth / 1000),
-	});
-
-	mermaid.init(
-		undefined,
-		document.querySelector(".mermaid"),
-		window.onload = function() {
-			newDatagram()
-		}
-	);
-}
-
-async function postData(url = "", data = {}) {
-	const response = await fetch(url, {
-	method: "POST", // *GET, POST, PUT, DELETE, etc.
-	mode: "cors", // no-cors, *cors, same-origin
-	cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-	credentials: "same-origin", // include, *same-origin, omit
-	headers: {
-	"Content-Type": "application/json",
-	// 'Content-Type': 'application/x-www-form-urlencoded',
-	},
-	redirect: "follow", // manual, *follow, error
-	referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-	body: JSON.stringify(data), // body data type must match "Content-Type" header
-	});
-	return response.json(); // parses JSON response into native JavaScript objects
-	}
-	
-
-function getCurrentTimestamp() {
-	const now = new Date();
-	const year = now.getUTCFullYear();
-	const month = String(now.getUTCMonth() + 1).padStart(2, "0");
-	const day = String(now.getUTCDate()).padStart(2, "0");
-	const hours = String(now.getUTCHours()).padStart(2, "0");
-	const minutes = String(now.getUTCMinutes()).padStart(2, "0");
-	const seconds = String(now.getUTCSeconds()).padStart(2, "0");
-	
-	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 
