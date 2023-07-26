@@ -30,8 +30,7 @@ async function postData(url = "", data = {}) {
 		cache: "no-cache", 
 		credentials: "same-origin", 
 		headers: {
-			"Content-Type": "application/json",
-			
+			"Content-Type": "application/json",		
 		},
 		redirect: "follow", 
 		referrerPolicy: "no-referrer", 
@@ -183,8 +182,8 @@ function newDatagram() {
 	const createNodeBtn = document.getElementById('createNodeBtn');
 	const popoverContent = document.createElement("div");
 	popoverContent.classList.add("popover-body-node-add-click");
-	let tableData = [];
 
+	// Calling popver to get the html content that's to be displayed in the popup 
 	popoverContent.innerHTML = generatePopover();
 
 	const createNode = popoverContent.querySelector(".create-node-btn");
@@ -198,7 +197,7 @@ function newDatagram() {
 	const masterBlock = popoverContent.querySelector("#blockElement")
 
 	let pageCounter = 1;
-	let elementCounter = 1;
+	let elementCounter = 0;
 
 	if (categorySelect) {
 		// Add event listener to category select element
@@ -336,19 +335,13 @@ function newDatagram() {
 		updateDatagram(mermaidStr);
 
 		let counter = 0;
-		renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter, elementCounter);
+		renderGraph(mermaidStr, jsonData, counter, pageCounter, elementCounter);
 		createJsonBtn.style.display = "block";
 
 		// Hide the popover
 		// popoverContent.hide();
 		popoverContent.style.display = 'none';
 	});
-
-	// $(createNodeBtn).popover({
-	// 	content: popoverContent,
-	// 	placement: 'right',
-	// 	html: true
-	// });
 
 	const list = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
 	list.map((el) => {
@@ -358,18 +351,11 @@ function newDatagram() {
 			html: true,
 			
 		}
-		console.log("bootstrap is being called")
 		new bootstrap.Popover(el, options);
 	});
-
-	// Show the popover when the button is clicked
-	// createNodeBtn.addEventListener('click', function() {
-	// 	// promptForProjectDetails();
-	// 	$(this).popover('show');
-	// });
 }
 
-function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter, elementCounter) {
+function renderGraph(mermaidStr, jsonData, counter, pageCounter, elementCounter) {
 	// console.log(mermaidStr)
 	const edgePaths = document.querySelector(".edgePaths");
 	const paths = edgePaths.querySelectorAll("path");
@@ -561,9 +547,9 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 					}
 					
 
-					if (category === "displayactivepage") {
+					if (category === "displayactivepage" || category === "openurl") {
 						pageCounter ++;
-						elementCounter = 1;
+						elementCounter = 0;
 					}
 
 					if (category === "crossverify") {
@@ -703,7 +689,7 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 
 					updateDatagram(mermaidStr);
 					elementCounter ++;
-          			renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter, elementCounter);
+          			renderGraph(mermaidStr, jsonData, counter, pageCounter, elementCounter);
 					// $('#graphDiv').removeAttr('data-processed');
 					// mermaid.init(undefined, document.querySelector(".mermaid"));
 					// const nodeLabelInput = document.querySelector("#nodeLabelInput");
@@ -711,26 +697,7 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 					popoverInstance.hide();
 				});
 
-				// const createJsonBtn = document.getElementById("create-json-btn");
-				// createJsonBtn.addEventListener("click", function() {
-				// 	// Ask user for file name
-				// 	const fileName = window.prompt("Please enter file name:");
-				  
-				// 	// If user entered a file name
-				// 	if (fileName) {
-				// 	  // Create a blob with the jsonData
-				// 	  const jsonBlob = new Blob([JSON.stringify(jsonData)], {type: "application/json"});
-				  
-				// 	  // Create a download link with the blob
-				// 	  const downloadLink = document.createElement("a");
-				// 	  downloadLink.href = URL.createObjectURL(jsonBlob);
-				// 	  downloadLink.download = fileName + ".json";
-				  
-				// 	  // Click the download link to download the file
-				// 	  downloadLink.click();
-					  
-				// 	}
-				// });
+				// Event Listener for generating JSON Files
 				const createJsonBtn = document.getElementById("create-json-btn");
 				createJsonBtn.addEventListener("click", function() {
 					Swal.fire({
@@ -773,30 +740,8 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 					});
 				});
 
-				  
-				// const generateWebBtn = document.querySelector("#generate-web-btn");
-				// generateWebBtn.addEventListener("click", function() {
-				//   // Ask user to name the project
-				//   const projectName = window.prompt("Enter Project Name:");
-				
-				//   if (projectName) {
-				// 	postData("https://apitracer.aitestpro.com/api/generateWebPro", {url:"", project: projectName, data: jsonData }).then((response) => {
-				// 		const downloadLink = document.createElement("a");
-				// 		downloadLink.href = response.data;
-				// 		// downloadLink.download = fileName + ".json";
-					
-				// 		// Click the download link to download the file
-				// 		downloadLink.click();
-
-				// 	});
-				//   }
-				// });
-				
-
-				// Better way to genereate JSON as well as template files for the datagram. This doesn't let the program repeat the download popup and 
-				// visually looks better.
+				// Event listener for Generate Templates
 				const generateWebBtn = document.querySelector("#generate-web-btn");
-
 				generateWebBtn.addEventListener("click", function() {
 				Swal.fire({
 					title: 'Enter Project Name:',
@@ -820,7 +765,6 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 					postData("https://apitracer.aitestpro.com/api/generateWebPro", { url: "", project: projectName, data: jsonData }).then((response) => {
 						const downloadLink = document.createElement("a");
 						downloadLink.href = response.data;
-						// downloadLink.download = fileName + ".json";
 						
 						// Click the download link to download the file
 						downloadLink.click();
@@ -836,6 +780,7 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 				});
 				});
 
+				// Event listener for Generate Test Cases Button. NOTE: Currently no api provided for generating Test Cases 
 				const generateTestCasesBtn = document.getElementById("generate-test-btn")
 				generateTestCasesBtn.addEventListener("click", function() {
 					console.log("Test cases being generated")
@@ -859,6 +804,7 @@ function renderGraph(mermaidStr, updateDatagram, jsonData, counter, pageCounter,
 }
 
 
+let versionNo = "1.1"
 runMermaid();
 
 // if there is an action request needs to have a response related to that action.
